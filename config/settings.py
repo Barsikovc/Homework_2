@@ -26,6 +26,7 @@ INSTALLED_APPS = [
 
     # Наши приложения
     'users',
+    'books',
 ]
 
 MIDDLEWARE = [
@@ -69,7 +70,7 @@ DATABASES = {
         'OPTIONS': {
             'driver': 'ODBC Driver 18 for SQL Server',
             'extra_params': 'TrustServerCertificate=yes;',
-        },
+        }
     }
 }
 

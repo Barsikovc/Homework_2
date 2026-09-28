@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% block title %}Список книг{% endblock %}
+
+{% block content %}
+<h1>Книги</h1>
+
+{% if books %}
+    {% for book in books %}
+        <div class="book-card">
+            {% if book.cover %}
+                <img src="{{ book.cover.url }}" alt="{{ book.title }}">
+            {% endif %}
+            <h3><a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a></h3>
+            <p><strong>Автор:</strong> {{ book.author }}</p>
+            <p><strong>Жанр:</strong> {{ book.genre.name }}</p>
+            {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Пока книг нет.</p>
+{% endif %}
+{% endblock %}

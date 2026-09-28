@@ -1,0 +1,50 @@
+body {
+    font-family: Arial, sans-serif;
+    max-width: 900px;
+    margin: 20px auto;
+    padding: 0 20px;
+    color: #222;
+}
+
+nav {
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+nav a {
+    margin-right: 15px;
+    text-decoration: none;
+    color: #0066cc;
+}
+
+h1 {
+    font-size: 24px;
+}
+
+.book-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.book-card img,
+.book-detail img {
+    max-width: 200px;
+    display: block;
+    margin-bottom: 10px;
+}
+
+button, .btn {
+    padding: 6px 12px;
+    background: #0066cc;
+    color: white;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.messages {
+    color: red;
+    margin-bottom: 10px;
+}
