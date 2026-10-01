@@ -1,15 +1,14 @@
 {% extends 'base.html' %}
 
-{% block title %}Добавить книгу{% endblock %}
+{% block title %}{{ action }} книгу{% endblock %}
 
 {% block content %}
-<h1>Добавить книгу</h1>
+<h1>{{ action }} книгу</h1>
 
 <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit">Сохранить</button>
+    <button type="submit" class="btn">{{ action }}</button>
+    <a href="{% url 'books:book_list' %}" class="btn">Отмена</a>
 </form>
-
-<p><a href="{% url 'books:book_list' %}">← Назад</a></p>
 {% endblock %}

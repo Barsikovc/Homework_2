@@ -35,16 +35,17 @@ h1 {
     margin-bottom: 10px;
 }
 
-button, .btn {
+.btn {
     padding: 6px 12px;
     background: #0066cc;
     color: white;
     border: none;
     cursor: pointer;
     text-decoration: none;
+    display: inline-block;
+    margin-right: 5px;
 }
 
-.messages {
-    color: red;
-    margin-bottom: 10px;
+.btn:hover {
+    background: #0055aa;
 }

@@ -1,5 +1,6 @@
 """Views для приложения books (FBV)."""
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .forms import BookForm
@@ -30,7 +31,45 @@ def book_create(request):
             return redirect('books:book_detail', pk=book.pk)
     else:
         form = BookForm()
-    return render(request, 'books/book_form.html', {'form': form})
+    return render(request, 'books/book_form.html', {'form': form, 'action': 'Создать'})
+
+
+@login_required
+def book_update(request, pk):
+    """Редактирует существующую книгу.
+
+    Доступ: только владелец или админ.
+    """
+    book = get_object_or_404(Book, pk=pk)
+
+    if book.owner != request.user and not request.user.is_staff:
+        raise PermissionDenied('Вы не можете редактировать чужую книгу.')
+
+    if request.method == 'POST':
+        form = BookForm(request.POST, request.FILES, instance=book)
+        if form.is_valid():
+            form.save()
+            return redirect('books:book_detail', pk=book.pk)
+    else:
+        form = BookForm(instance=book)
+    return render(request, 'books/book_form.html', {'form': form, 'action': 'Обновить'})
+
+
+@login_required
+def book_delete(request, pk):
+    """Удаляет книгу.
+
+    Доступ: только владелец или админ.
+    """
+    book = get_object_or_404(Book, pk=pk)
+
+    if book.owner != request.user and not request.user.is_staff:
+        raise PermissionDenied('Вы не можете удалить чужую книгу.')
+
+    if request.method == 'POST':
+        book.delete()
+        return redirect('books:book_list')
+    return render(request, 'books/book_delete.html', {'book': book})
 
 
 def genre_list(request):
