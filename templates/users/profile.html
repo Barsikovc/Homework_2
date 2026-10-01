@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block title %}Профиль{% endblock %}
+
+{% block content %}
+<h1>Профиль — {{ user.username }}</h1>
+
+{% if user.avatar %}
+    <img src="{{ user.avatar.url }}" alt="Avatar" style="max-width: 150px;">
+{% endif %}
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">Сохранить</button>
+</form>
+
+<p><a href="{% url 'users:logout' %}" class="btn">Выйти</a></p>
+{% endblock %}
