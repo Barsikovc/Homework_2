@@ -3,8 +3,10 @@ from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404, redirect, render
 
+
 from .forms import BookForm
 from .models import Book, Genre
+from .services import send_new_book_email
 
 
 def book_list(request):
@@ -21,13 +23,14 @@ def book_detail(request, pk):
 
 @login_required
 def book_create(request):
-    """Создаёт новую книгу."""
+    """Создаёт новую книгу и привязывает к пользователю."""
     if request.method == 'POST':
         form = BookForm(request.POST, request.FILES)
         if form.is_valid():
             book = form.save(commit=False)
-            book.owner = request.user
+            book.owner = request.user  # автоматическая привязка
             book.save()
+            send_new_book_email(book)  # уведомление
             return redirect('books:book_detail', pk=book.pk)
     else:
         form = BookForm()

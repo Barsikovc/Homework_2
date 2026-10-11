@@ -1,12 +1,29 @@
 """Формы для приложения users."""
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import AuthenticationForm
+from django.contrib.auth.forms import AuthenticationForm, PasswordChangeForm
 
 User = get_user_model()
 
 
-class UserRegisterForm(forms.ModelForm):
+class StyleFormMixin:
+    """Миксин для добавления CSS-классов ко всем полям формы."""
+
+    def __init__(self, *args, **kwargs):
+        """Добавляет классы к виджетам."""
+        super().__init__(*args, **kwargs)
+        for field_name, field in self.fields.items():
+            widget = field.widget
+            if isinstance(widget, forms.CheckboxInput):
+                widget.attrs.setdefault('class', 'form-checkbox')
+            elif isinstance(widget, forms.Select):
+                widget.attrs.setdefault('class', 'form-select')
+            else:
+                widget.attrs.setdefault('class', 'form-input')
+                widget.attrs.setdefault('placeholder', field.label or field_name)
+
+
+class UserRegisterForm(StyleFormMixin, forms.ModelForm):
     """Форма регистрации нового пользователя."""
 
     password1 = forms.CharField(
@@ -50,7 +67,7 @@ class UserRegisterForm(forms.ModelForm):
         return user
 
 
-class UserLoginForm(AuthenticationForm):
+class UserLoginForm(StyleFormMixin, AuthenticationForm):
     """Форма входа в аккаунт."""
 
     username = forms.CharField(
@@ -63,7 +80,7 @@ class UserLoginForm(AuthenticationForm):
     )
 
 
-class UserUpdateForm(forms.ModelForm):
+class UserUpdateForm(StyleFormMixin, forms.ModelForm):
     """Форма редактирования профиля."""
 
     class Meta:
@@ -71,3 +88,7 @@ class UserUpdateForm(forms.ModelForm):
 
         model = User
         fields = ['first_name', 'last_name', 'email', 'phone', 'avatar']
+
+
+class CustomPasswordChangeForm(StyleFormMixin, PasswordChangeForm):
+    """Форма смены пароля со стилизацией."""

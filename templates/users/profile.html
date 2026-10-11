@@ -15,5 +15,8 @@
     <button type="submit" class="btn">Сохранить</button>
 </form>
 
-<p><a href="{% url 'users:logout' %}" class="btn">Выйти</a></p>
+<p>
+    <a href="{% url 'users:password_change' %}" class="btn">Сменить пароль</a>
+    <a href="{% url 'users:logout' %}" class="btn">Выйти</a>
+</p>
 {% endblock %}
