@@ -14,7 +14,10 @@
         {% if user.is_authenticated %}
             <a href="{% url 'books:book_create' %}">Добавить книгу</a>
             <a href="{% url 'users:profile' %}">Профиль ({{ user.username }})</a>
-            <a href="{% url 'users:logout' %}">Выйти</a>
+            <form method="post" action="{% url 'users:logout' %}" style="display:inline">
+                {% csrf_token %}
+                <button type="submit" class="btn">Выйти</button>
+            </form>
         {% else %}
             <a href="{% url 'users:login' %}">Войти</a>
             <a href="{% url 'users:register' %}">Регистрация</a>

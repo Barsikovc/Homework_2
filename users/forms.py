@@ -20,7 +20,9 @@ class StyleFormMixin:
                 widget.attrs.setdefault('class', 'form-select')
             else:
                 widget.attrs.setdefault('class', 'form-input')
-                widget.attrs.setdefault('placeholder', field.label or field_name)
+                widget.attrs.setdefault(
+                    'placeholder', field.label or field_name,
+                )
 
 
 class UserRegisterForm(StyleFormMixin, forms.ModelForm):
@@ -46,7 +48,9 @@ class UserRegisterForm(StyleFormMixin, forms.ModelForm):
         """Проверяет уникальность email."""
         email = self.cleaned_data.get('email')
         if User.objects.filter(email=email).exists():
-            raise forms.ValidationError('Пользователь с таким email уже существует.')
+            raise forms.ValidationError(
+                'Пользователь с таким email уже существует.'
+            )
         return email
 
     def clean(self):

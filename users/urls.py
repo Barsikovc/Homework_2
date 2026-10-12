@@ -7,13 +7,17 @@ from . import views
 app_name = 'users'
 
 urlpatterns = [
-    path('register/', views.register_view, name='register'),
-    path('login/', views.login_view, name='login'),
-    path('logout/', views.logout_view, name='logout'),
-    path('profile/', views.profile_view, name='profile'),
-    path('password-change/', views.password_change_view, name='password_change'),
+    path('register/', views.RegisterView.as_view(), name='register'),
+    path('login/', views.CustomLoginView.as_view(), name='login'),
+    path('logout/', views.CustomLogoutView.as_view(), name='logout'),
+    path('profile/', views.ProfileView.as_view(), name='profile'),
+    path(
+        'password-change/',
+        views.CustomPasswordChangeView.as_view(),
+        name='password_change',
+    ),
 
-    # Сброс пароля — используем встроенные вьюхи Django
+    # Сброс пароля — встроенные CBV
     path(
         'password-reset/',
         auth_views.PasswordResetView.as_view(

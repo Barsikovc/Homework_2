@@ -1,9 +1,13 @@
-"""Views для приложения users (FBV)."""
-from django.contrib.auth import (
-    authenticate, login, logout, update_session_auth_hash,
+"""Views для приложения users (CBV)."""
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.views import (
+    LoginView,
+    LogoutView,
+    PasswordChangeView,
 )
-from django.contrib.auth.decorators import login_required
-from django.shortcuts import redirect, render
+from django.urls import reverse_lazy
+from django.views.generic import CreateView, UpdateView
 
 from .forms import (
     CustomPasswordChangeForm,
@@ -11,73 +15,81 @@ from .forms import (
     UserRegisterForm,
     UserUpdateForm,
 )
+from .models import CustomUser
 from .services import send_password_change_email, send_welcome_email
 
 
-def register_view(request):
-    """Регистрация нового пользователя."""
-    if request.user.is_authenticated:
+class RegisterView(CreateView):
+    """CBV для регистрации нового пользователя."""
+
+    model = CustomUser
+    form_class = UserRegisterForm
+    template_name = 'users/register.html'
+    success_url = reverse_lazy('users:profile')
+
+    def dispatch(self, request, *args, **kwargs):
+        """Перенаправляет авторизованных на профиль."""
+        if request.user.is_authenticated:
+            return self.redirect_to_profile()
+        return super().dispatch(request, *args, **kwargs)
+
+    def redirect_to_profile(self):
+        """Возвращает редирект на профиль."""
+        from django.shortcuts import redirect
         return redirect('users:profile')
 
-    if request.method == 'POST':
-        form = UserRegisterForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            send_welcome_email(user)
-            login(request, user)
-            return redirect('users:profile')
-    else:
-        form = UserRegisterForm()
-    return render(request, 'users/register.html', {'form': form})
+    def form_valid(self, form):
+        """Сохраняет пользователя, шлёт письмо и логинит его."""
+        response = super().form_valid(form)
+        user = self.object
+        send_welcome_email(user)
+        from django.contrib.auth import login
+        login(self.request, user)
+        return response
 
 
-def login_view(request):
-    """Вход в аккаунт."""
-    if request.user.is_authenticated:
-        return redirect('users:profile')
+class CustomLoginView(LoginView):
+    """CBV для входа в аккаунт."""
 
-    if request.method == 'POST':
-        form = UserLoginForm(request, data=request.POST)
-        if form.is_valid():
-            user = form.get_user()
-            login(request, user)
-            return redirect('users:profile')
-    else:
-        form = UserLoginForm()
-    return render(request, 'users/login.html', {'form': form})
+    template_name = 'users/login.html'
+    authentication_form = UserLoginForm
+    redirect_authenticated_user = True
+
+    def get_success_url(self):
+        """Возвращает URL для редиректа после входа."""
+        return reverse_lazy('users:profile')
 
 
-def logout_view(request):
-    """Выход из аккаунта."""
-    logout(request)
-    return redirect('users:login')
+class CustomLogoutView(LogoutView):
+    """CBV для выхода из аккаунта."""
+
+    next_page = reverse_lazy('users:login')
+    template_name = 'users/logout.html'
 
 
-@login_required
-def profile_view(request):
-    """Просмотр и редактирование профиля."""
-    if request.method == 'POST':
-        form = UserUpdateForm(
-            request.POST, request.FILES, instance=request.user,
-        )
-        if form.is_valid():
-            form.save()
-            return redirect('users:profile')
-    else:
-        form = UserUpdateForm(instance=request.user)
-    return render(request, 'users/profile.html', {'form': form})
+class ProfileView(LoginRequiredMixin, UpdateView):
+    """CBV для просмотра и редактирования профиля."""
+
+    model = CustomUser
+    form_class = UserUpdateForm
+    template_name = 'users/profile.html'
+    success_url = reverse_lazy('users:profile')
+
+    def get_object(self, queryset=None):
+        """Возвращает текущего пользователя."""
+        return self.request.user
 
 
-@login_required
-def password_change_view(request):
-    """Смена пароля авторизованным пользователем."""
-    if request.method == 'POST':
-        form = CustomPasswordChangeForm(request.user, request.POST)
-        if form.is_valid():
-            user = form.save()
-            update_session_auth_hash(request, user)
-            send_password_change_email(user)
-            return redirect('users:profile')
-    else:
-        form = CustomPasswordChangeForm(request.user)
-    return render(request, 'users/password_change.html', {'form': form})
+class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
+    """CBV для смены пароля."""
+
+    form_class = CustomPasswordChangeForm
+    template_name = 'users/password_change.html'
+    success_url = reverse_lazy('users:profile')
+
+    def form_valid(self, form):
+        """Сохраняет пароль, обновляет сессию и шлёт письмо."""
+        response = super().form_valid(form)
+        update_session_auth_hash(self.request, form.user)
+        send_password_change_email(form.user)
+        return response
