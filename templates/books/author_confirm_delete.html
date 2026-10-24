@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить автора{% endblock %}
+
+{% block content %}
+<h1>Удалить автора?</h1>
+<p>Удалить <strong>{{ author.name }}</strong>? Все книги автора тоже будут удалены.</p>
+
+<form method="post" class="delete-form">
+    {% csrf_token %}
+    <button type="submit" class="btn">Удалить</button>
+    <a href="{% url 'books:author_detail' author.pk %}" class="btn">Отмена</a>
+</form>
+{% endblock %}

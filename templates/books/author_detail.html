@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ author.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ author.name }}</h1>
+
+{% if author.photo %}
+    <img src="{{ author.photo.url }}" alt="{{ author.name }}" style="max-width:200px;">
+{% endif %}
+
+{% if author.country %}<p><strong>Страна:</strong> {{ author.country }}</p>{% endif %}
+{% if author.birth_date %}<p><strong>Дата рождения:</strong> {{ author.birth_date }}</p>{% endif %}
+{% if author.bio %}<p>{{ author.bio }}</p>{% endif %}
+
+<h2>Книги автора</h2>
+<ul>
+    {% for book in books %}
+        <li>
+            <a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a>
+            ({{ book.genre.name }}{% if book.year %}, {{ book.year }}{% endif %})
+        </li>
+    {% empty %}
+        <li>Книг пока нет.</li>
+    {% endfor %}
+</ul>
+
+{% if user.is_author %}
+    <p>
+        <a href="{% url 'books:author_update' author.pk %}" class="btn">Редактировать</a>
+        <a href="{% url 'books:author_delete' author.pk %}" class="btn">Удалить</a>
+    </p>
+{% endif %}
+
+<p><a href="{% url 'books:author_list' %}">← К авторам</a></p>
+{% endblock %}

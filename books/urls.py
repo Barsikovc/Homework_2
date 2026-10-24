@@ -6,10 +6,24 @@ from . import views
 app_name = 'books'
 
 urlpatterns = [
-    path('', views.book_list, name='book_list'),
-    path('genres/', views.genre_list, name='genre_list'),
-    path('create/', views.book_create, name='book_create'),
-    path('<int:pk>/', views.book_detail, name='book_detail'),
-    path('<int:pk>/update/', views.book_update, name='book_update'),
-    path('<int:pk>/delete/', views.book_delete, name='book_delete'),
+    # Book
+    path('', views.BookListView.as_view(), name='book_list'),
+    path('books/create/', views.BookCreateView.as_view(), name='book_create'),
+    path('books/<int:pk>/', views.BookDetailView.as_view(), name='book_detail'),
+    path('books/<int:pk>/update/', views.BookUpdateView.as_view(), name='book_update'),
+    path('books/<int:pk>/delete/', views.BookDeleteView.as_view(), name='book_delete'),
+
+    # Genre
+    path('genres/', views.GenreListView.as_view(), name='genre_list'),
+    path('genres/create/', views.GenreCreateView.as_view(), name='genre_create'),
+    path('genres/<int:pk>/', views.GenreDetailView.as_view(), name='genre_detail'),
+    path('genres/<int:pk>/update/', views.GenreUpdateView.as_view(), name='genre_update'),
+    path('genres/<int:pk>/delete/', views.GenreDeleteView.as_view(), name='genre_delete'),
+
+    # Author
+    path('authors/', views.AuthorListView.as_view(), name='author_list'),
+    path('authors/create/', views.AuthorCreateView.as_view(), name='author_create'),
+    path('authors/<int:pk>/', views.AuthorDetailView.as_view(), name='author_detail'),
+    path('authors/<int:pk>/update/', views.AuthorUpdateView.as_view(), name='author_update'),
+    path('authors/<int:pk>/delete/', views.AuthorDeleteView.as_view(), name='author_delete'),
 ]

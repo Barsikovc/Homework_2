@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить жанр{% endblock %}
+
+{% block content %}
+<h1>Удалить жанр?</h1>
+<p>Удалить <strong>{{ genre.name }}</strong>? Все книги жанра тоже будут удалены.</p>
+
+<form method="post" class="delete-form">
+    {% csrf_token %}
+    <button type="submit" class="btn">Удалить</button>
+    <a href="{% url 'books:genre_list' %}" class="btn">Отмена</a>
+</form>
+{% endblock %}

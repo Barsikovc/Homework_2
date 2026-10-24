@@ -13,15 +13,15 @@
                 <img src="{{ book.cover.url }}" alt="{{ book.title }}">
             {% endif %}
             <h3><a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a></h3>
-            <p><strong>Автор:</strong> {{ book.author }}</p>
+            <p><strong>Автор:</strong> <a href="{% url 'books:author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
             <p><strong>Жанр:</strong> {{ book.genre.name }}</p>
             {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
 
             {% if book.description %}
-                <p>{{ book.description|truncate_text:15 }}</p>
+                <p>{{ book.description|truncate_text:100 }}</p>
             {% endif %}
 
-            {% if book|is_owner:user %}
+            {% if book|can_edit:user %}
                 <p>
                     <a href="{% url 'books:book_update' book.pk %}" class="btn">Редактировать</a>
                     <a href="{% url 'books:book_delete' book.pk %}" class="btn">Удалить</a>
@@ -29,6 +29,18 @@
             {% endif %}
         </div>
     {% endfor %}
+
+    <div class="pagination">
+        {% if is_paginated %}
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn">← Назад</a>
+            {% endif %}
+            <span>Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn">Вперёд →</a>
+            {% endif %}
+        {% endif %}
+    </div>
 {% else %}
     <p>Пока книг нет.</p>
 {% endif %}

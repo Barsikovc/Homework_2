@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Авторы{% endblock %}
+
+{% block content %}
+<h1>Авторы</h1>
+
+{% if user.is_author %}
+    <p><a href="{% url 'books:author_create' %}" class="btn">Добавить автора</a></p>
+{% endif %}
+
+{% if authors %}
+    {% for author in authors %}
+        <div class="book-card">
+            {% if author.photo %}
+                <img src="{{ author.photo.url }}" alt="{{ author.name }}">
+            {% endif %}
+            <h3><a href="{% url 'books:author_detail' author.pk %}">{{ author.name }}</a></h3>
+            {% if author.country %}<p><strong>Страна:</strong> {{ author.country }}</p>{% endif %}
+            {% if author.birth_date %}<p><strong>Дата рождения:</strong> {{ author.birth_date }}</p>{% endif %}
+            {% if user.is_author %}
+                <a href="{% url 'books:author_update' author.pk %}" class="btn">Ред.</a>
+                <a href="{% url 'books:author_delete' author.pk %}" class="btn">Удалить</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+
+    {% if is_paginated %}
+        <div>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn">← Назад</a>
+            {% endif %}
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn">Вперёд →</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <p>Пока авторов нет.</p>
+{% endif %}
+{% endblock %}

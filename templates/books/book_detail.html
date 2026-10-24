@@ -9,13 +9,13 @@
         <img src="{{ book.cover.url }}" alt="{{ book.title }}">
     {% endif %}
     <h1>{{ book.title }}</h1>
-    <p><strong>Автор:</strong> {{ book.author }}</p>
+    <p><strong>Автор:</strong> <a href="{% url 'books:author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
     <p><strong>Жанр:</strong> {{ book.genre.name }} (книг в жанре: {% genre_book_count book.genre %})</p>
     {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
     {% if book.description %}<p>{{ book.description }}</p>{% endif %}
     {% if book.owner %}<p><strong>Добавил:</strong> {{ book.owner.username }}</p>{% endif %}
 
-    {% if book|is_owner:user %}
+    {% if book|can_edit:user %}
         <p>
             <a href="{% url 'books:book_update' book.pk %}" class="btn">Редактировать</a>
             <a href="{% url 'books:book_delete' book.pk %}" class="btn">Удалить</a>

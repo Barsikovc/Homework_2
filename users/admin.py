@@ -7,13 +7,13 @@ from .models import CustomUser
 
 @admin.register(CustomUser)
 class CustomUserAdmin(BaseUserAdmin):
-    """Админка для кастомной модели пользователя."""
+    """Админка для кастомного пользователя."""
 
     list_display = (
-        'id', 'username', 'email', 'first_name',
-        'last_name', 'is_staff', 'is_active',
+        'id', 'username', 'email', 'role',
+        'first_name', 'last_name', 'is_staff', 'is_active',
     )
-    list_filter = ('is_staff', 'is_superuser', 'is_active')
+    list_filter = ('role', 'is_staff', 'is_superuser', 'is_active')
     search_fields = ('username', 'email', 'first_name', 'last_name')
     ordering = ('-created_at',)
 
@@ -22,12 +22,10 @@ class CustomUserAdmin(BaseUserAdmin):
         ('Персональная информация', {
             'fields': ('first_name', 'last_name', 'email', 'phone', 'avatar'),
         }),
-        ('Права', {
-            'fields': ('is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
+        ('Роль и права', {
+            'fields': ('role', 'is_active', 'is_staff', 'is_superuser', 'groups', 'user_permissions'),
         }),
-        ('Даты', {
-            'fields': ('last_login', 'created_at', 'updated_at'),
-        }),
+        ('Даты', {'fields': ('last_login', 'created_at', 'updated_at')}),
     )
 
     readonly_fields = ('created_at', 'updated_at', 'last_login')
@@ -35,6 +33,6 @@ class CustomUserAdmin(BaseUserAdmin):
     add_fieldsets = (
         (None, {
             'classes': ('wide',),
-            'fields': ('username', 'email', 'password1', 'password2'),
+            'fields': ('username', 'email', 'role', 'password1', 'password2'),
         }),
     )

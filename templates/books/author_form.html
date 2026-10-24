@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} автора{% endblock %}
+
+{% block content %}
+<h1>{{ action }} автора</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">{{ action }}</button>
+    <a href="{% url 'books:author_list' %}" class="btn">Отмена</a>
+</form>
+{% endblock %}

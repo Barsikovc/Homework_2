@@ -6,13 +6,21 @@
 {% block content %}
 <h1>Жанры</h1>
 
+{% if user.is_author %}
+    <p><a href="{% url 'books:genre_create' %}" class="btn">Добавить жанр</a></p>
+{% endif %}
+
 {% if genres %}
     <ul>
         {% for genre in genres %}
             <li>
-                <strong>{{ genre.name }}</strong>
+                <a href="{% url 'books:genre_detail' genre.pk %}"><strong>{{ genre.name }}</strong></a>
                 ({% genre_book_count genre %} книг)
                 {% if genre.description %}— {{ genre.description }}{% endif %}
+                {% if user.is_author %}
+                    <a href="{% url 'books:genre_update' genre.pk %}">Ред.</a>
+                    <a href="{% url 'books:genre_delete' genre.pk %}">Удалить</a>
+                {% endif %}
             </li>
         {% endfor %}
     </ul>

@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% load book_tags %}
+
+{% block title %}{{ genre.name }}{% endblock %}
+
+{% block content %}
+<h1>{{ genre.name }}</h1>
+{% if genre.image %}<img src="{{ genre.image.url }}" alt="{{ genre.name }}" style="max-width:200px;">{% endif %}
+{% if genre.description %}<p>{{ genre.description }}</p>{% endif %}
+<p>Книг в жанре: {% genre_book_count genre %}</p>
+
+<h2>Книги жанра</h2>
+<ul>
+    {% for book in genre.books.all %}
+        <li><a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a> — {{ book.author.name }}</li>
+    {% empty %}
+        <li>Книг пока нет.</li>
+    {% endfor %}
+</ul>
+
+<p><a href="{% url 'books:genre_list' %}">← К жанрам</a></p>
+{% endblock %}

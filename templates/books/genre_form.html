@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ action }} жанр{% endblock %}
+
+{% block content %}
+<h1>{{ action }} жанр</h1>
+
+<form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn">{{ action }}</button>
+    <a href="{% url 'books:genre_list' %}" class="btn">Отмена</a>
+</form>
+{% endblock %}

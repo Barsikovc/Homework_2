@@ -6,15 +6,7 @@ register = template.Library()
 
 @register.filter(name='truncate_text')
 def truncate_text(value, max_length=100):
-    """Обрезает текст до указанной длины в символах.
-
-    Args:
-        value: Исходный текст.
-        max_length: Максимум символов.
-
-    Returns:
-        str: Обрезанный текст с многоточием.
-    """
+    """Обрезает текст до max_length символов."""
     if not value:
         return ''
     text = str(value)
@@ -22,16 +14,10 @@ def truncate_text(value, max_length=100):
         return text
     return text[:max_length].rstrip() + '...'
 
+
 @register.simple_tag(name='genre_book_count')
 def genre_book_count(genre):
-    """Возвращает количество книг в жанре.
-
-    Args:
-        genre: Объект Genre.
-
-    Returns:
-        int: Количество книг.
-    """
+    """Возвращает количество книг в жанре."""
     if not genre:
         return 0
     return genre.books.count()
@@ -39,15 +25,28 @@ def genre_book_count(genre):
 
 @register.filter(name='is_owner')
 def is_owner(obj, user):
-    """Проверяет, является ли пользователь владельцем объекта.
-
-    Args:
-        obj: Объект с полем owner.
-        user: Пользователь.
-
-    Returns:
-        bool: True, если пользователь — владелец.
-    """
+    """Проверяет, владелец ли пользователь."""
     if not user or not user.is_authenticated:
         return False
     return getattr(obj, 'owner_id', None) == user.id
+
+
+@register.filter(name='can_edit')
+def can_edit(obj, user):
+    """Проверяет, может ли пользователь редактировать объект.
+
+    Разрешено: владелец, модератор, админ.
+    """
+    if not user or not user.is_authenticated:
+        return False
+    if user.is_moderator:
+        return True
+    return getattr(obj, 'owner_id', None) == user.id
+
+
+@register.filter(name='can_create_book')
+def can_create_book(user):
+    """Проверяет, может ли пользователь создавать книги."""
+    if not user or not user.is_authenticated:
+        return False
+    return user.is_author
