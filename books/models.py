@@ -80,6 +80,8 @@ class Book(models.Model):
         related_name='books',
         verbose_name='Владелец',
     )
+    is_active = models.BooleanField(default=True, verbose_name='Активна')
+    views = models.PositiveIntegerField(default=0, verbose_name='Просмотры')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата добавления')
 
     class Meta:

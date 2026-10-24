@@ -1,4 +1,3 @@
-# core/apps.py
 """Конфигурация core-приложения."""
 from django.apps import AppConfig
 

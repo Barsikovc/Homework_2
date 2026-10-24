@@ -8,9 +8,14 @@ from django.views.generic import (
 )
 
 from .forms import AuthorForm, BookForm, GenreForm
-from .mixins import AuthorRequiredMixin, IsOwnerOrModeratorMixin
+from .mixins import (
+    AuthorRequiredMixin,
+    IsOwnerOrModeratorMixin,
+    ModeratorRequiredMixin,
+)
 from .models import Author, Book, Genre
 from .services import send_new_book_email
+from .services import send_new_book_email, send_views_milestone_email
 
 logger = logging.getLogger('homework.requests')
 
@@ -31,7 +36,7 @@ class BookListView(ListView):
 
 
 class BookDetailView(DetailView):
-    """Детали книги."""
+    """Детали книги + счётчик просмотров."""
 
     model = Book
     template_name = 'books/book_detail.html'
@@ -40,6 +45,24 @@ class BookDetailView(DetailView):
     def get_queryset(self):
         """Оптимизирует запрос."""
         return Book.objects.select_related('genre', 'author', 'owner')
+
+    def get(self, request, *args, **kwargs):
+        """Увеличивает счётчик просмотров для всех, кроме владельца."""
+        response = super().get(request, *args, **kwargs)
+        book = self.object
+        user = request.user
+
+        # Не считаем просмотр владельца и админа
+        is_owner = user.is_authenticated and book.owner_id == user.id
+        is_admin = user.is_authenticated and user.is_staff
+
+        if not is_owner and not is_admin:
+            book.views += 1
+            book.save(update_fields=['views'])
+            if book.views % 20 == 0:
+                send_views_milestone_email(book)
+
+        return response
 
 
 class BookCreateView(AuthorRequiredMixin, CreateView):
@@ -66,15 +89,24 @@ class BookCreateView(AuthorRequiredMixin, CreateView):
 
 
 class BookUpdateView(IsOwnerOrModeratorMixin, UpdateView):
-    """Редактирование книги."""
+    """Редактирование книги.
+
+    - Владелец — видит только базовые поля.
+    - Модератор/админ — видит все поля (включая is_active, owner, views).
+    """
 
     model = Book
-    form_class = BookForm
     template_name = 'books/book_form.html'
     success_url = reverse_lazy('books:book_list')
 
+    def get_form_class(self):
+        """Выбирает форму в зависимости от роли."""
+        if self.request.user.is_moderator:
+            return BookAdminUpdateForm
+        return BookUpdateForm
+
     def get_context_data(self, **kwargs):
-        """Добавляет action в контекст."""
+        """Добавляет action."""
         ctx = super().get_context_data(**kwargs)
         ctx['action'] = 'Обновить'
         return ctx
@@ -104,6 +136,23 @@ class BookDeleteView(IsOwnerOrModeratorMixin, DeleteView):
         return super().form_valid(form)
 
 
+class BookToggleActiveView(ModeratorRequiredMixin, UpdateView):
+    """Быстрая смена активности книги (только модератор/админ)."""
+
+    model = Book
+    fields = []
+    template_name = 'books/book_toggle_confirm.html'
+    success_url = reverse_lazy('books:book_list')
+
+    def form_valid(self, form):
+        """Переключает is_active."""
+        self.object.is_active = not self.object.is_active
+        self.object.save(update_fields=['is_active'])
+        logger.info(
+            'User %s toggled active for book "%s" → %s',
+            self.request.user, self.object.title, self.object.is_active,
+        )
+        return super().form_valid(form)
 # ============ GENRE ============
 
 class GenreListView(ListView):

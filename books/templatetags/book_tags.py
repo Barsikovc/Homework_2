@@ -50,3 +50,18 @@ def can_create_book(user):
     if not user or not user.is_authenticated:
         return False
     return user.is_author
+
+@register.filter(name='can_toggle_active')
+def can_toggle_active(user):
+    """Может ли пользователь менять активность."""
+    if not user or not user.is_authenticated:
+        return False
+    return user.is_moderator
+
+
+@register.filter(name='is_moderator')
+def is_moderator(user):
+    """Проверяет, модератор ли пользователь."""
+    if not user or not user.is_authenticated:
+        return False
+    return user.is_moderator

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Сменить активность{% endblock %}
+
+{% block content %}
+<h1>Сменить активность книги?</h1>
+
+<p>Книга: <strong>{{ book.title }}</strong></p>
+<p>Текущий статус: {% if book.is_active %}✅ Активна{% else %}❌ Неактивна{% endif %}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn">
+        {% if book.is_active %}Деактивировать{% else %}Активировать{% endif %}
+    </button>
+    <a href="{% url 'books:book_detail' book.pk %}" class="btn">Отмена</a>
+</form>
+{% endblock %}

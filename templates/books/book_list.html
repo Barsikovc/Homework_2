@@ -12,10 +12,20 @@
             {% if book.cover %}
                 <img src="{{ book.cover.url }}" alt="{{ book.title }}">
             {% endif %}
-            <h3><a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a></h3>
+            <h3>
+                <a href="{% url 'books:book_detail' book.pk %}">{{ book.title }}</a>
+                {% if not book.is_active %}
+                    <span style="color:#a00;">(неактивна)</span>
+                {% endif %}
+            </h3>
             <p><strong>Автор:</strong> <a href="{% url 'books:author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
             <p><strong>Жанр:</strong> {{ book.genre.name }}</p>
             {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
+
+            {% if user|is_moderator %}
+                <p><strong>Просмотров:</strong> {{ book.views }}</p>
+                <p><strong>Владелец:</strong> {{ book.owner.username|default:"—" }}</p>
+            {% endif %}
 
             {% if book.description %}
                 <p>{{ book.description|truncate_text:100 }}</p>
@@ -25,6 +35,11 @@
                 <p>
                     <a href="{% url 'books:book_update' book.pk %}" class="btn">Редактировать</a>
                     <a href="{% url 'books:book_delete' book.pk %}" class="btn">Удалить</a>
+                    {% if user|can_toggle_active %}
+                        <a href="{% url 'books:book_toggle_active' book.pk %}" class="btn">
+                            {% if book.is_active %}Деактивировать{% else %}Активировать{% endif %}
+                        </a>
+                    {% endif %}
                 </p>
             {% endif %}
         </div>

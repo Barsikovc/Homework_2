@@ -1,4 +1,3 @@
-# core/middleware.py
 """Middleware для логирования запросов."""
 import logging
 

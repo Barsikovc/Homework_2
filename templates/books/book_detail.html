@@ -8,18 +8,38 @@
     {% if book.cover %}
         <img src="{{ book.cover.url }}" alt="{{ book.title }}">
     {% endif %}
-    <h1>{{ book.title }}</h1>
+    <h1>
+        {{ book.title }}
+        {% if not book.is_active %}<span style="color:#a00;">(неактивна)</span>{% endif %}
+    </h1>
+
     <p><strong>Автор:</strong> <a href="{% url 'books:author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
-    <p><strong>Жанр:</strong> {{ book.genre.name }} (книг в жанре: {% genre_book_count book.genre %})</p>
+    <p><strong>Жанр:</strong> <a href="{% url 'books:genre_detail' book.genre.pk %}">{{ book.genre.name }}</a></p>
     {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
     {% if book.description %}<p>{{ book.description }}</p>{% endif %}
     {% if book.owner %}<p><strong>Добавил:</strong> {{ book.owner.username }}</p>{% endif %}
 
+    {# Счётчик просмотров — только модератору/админу #}
+    {% if user|is_moderator %}
+        <p><strong>Просмотров:</strong> {{ book.views }}</p>
+    {% endif %}
+
+    {# Кнопки для владельца/модератора #}
     {% if book|can_edit:user %}
         <p>
             <a href="{% url 'books:book_update' book.pk %}" class="btn">Редактировать</a>
             <a href="{% url 'books:book_delete' book.pk %}" class="btn">Удалить</a>
         </p>
+    {% endif %}
+
+    {# Кнопка смены активности — только модератору/админу #}
+    {% if user|can_toggle_active %}
+        <form method="post" action="{% url 'books:book_toggle_active' book.pk %}" style="display:inline">
+            {% csrf_token %}
+            <button type="submit" class="btn">
+                {% if book.is_active %}Деактивировать{% else %}Активировать{% endif %}
+            </button>
+        </form>
     {% endif %}
 
     <p><a href="{% url 'books:book_list' %}">← Назад к списку</a></p>

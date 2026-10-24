@@ -12,6 +12,7 @@ urlpatterns = [
     path('books/<int:pk>/', views.BookDetailView.as_view(), name='book_detail'),
     path('books/<int:pk>/update/', views.BookUpdateView.as_view(), name='book_update'),
     path('books/<int:pk>/delete/', views.BookDeleteView.as_view(), name='book_delete'),
+    path('books/<int:pk>/toggle-active/', views.BookToggleActiveView.as_view(), name='book_toggle_active'),
 
     # Genre
     path('genres/', views.GenreListView.as_view(), name='genre_list'),

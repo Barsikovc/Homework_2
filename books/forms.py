@@ -85,3 +85,64 @@ class GenreForm(StyleFormMixin, forms.ModelForm):
         widgets = {
             'description': forms.Textarea(attrs={'rows': 3}),
         }
+
+
+class BookUpdateForm(StyleFormMixin, forms.ModelForm):
+    """Форма редактирования книги для владельца (без активности, владельца, просмотров)."""
+
+    class Meta:
+        """Метаданные формы."""
+
+        model = Book
+        fields = ['title', 'author', 'genre', 'description', 'cover', 'year']
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def clean_title(self):
+        """Проверяет длину названия."""
+        title = self.cleaned_data.get('title', '').strip()
+        if len(title) < 3:
+            raise forms.ValidationError('Название должно содержать минимум 3 символа.')
+        return title
+
+    def clean_year(self):
+        """Проверяет год."""
+        year = self.cleaned_data.get('year')
+        if year and year > date.today().year:
+            raise forms.ValidationError('Год издания не может быть в будущем.')
+        if year and year < 1000:
+            raise forms.ValidationError('Год должен быть не меньше 1000.')
+        return year
+
+
+class BookAdminUpdateForm(StyleFormMixin, forms.ModelForm):
+    """Форма редактирования книги для админа/модератора (все поля)."""
+
+    class Meta:
+        """Метаданные формы."""
+
+        model = Book
+        fields = [
+            'title', 'author', 'genre', 'description', 'cover', 'year',
+            'is_active', 'owner', 'views',
+        ]
+        widgets = {
+            'description': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def clean_title(self):
+        """Проверяет длину названия."""
+        title = self.cleaned_data.get('title', '').strip()
+        if len(title) < 3:
+            raise forms.ValidationError('Название должно содержать минимум 3 символа.')
+        return title
+
+    def clean_year(self):
+        """Проверяет год."""
+        year = self.cleaned_data.get('year')
+        if year and year > date.today().year:
+            raise forms.ValidationError('Год издания не может быть в будущем.')
+        if year and year < 1000:
+            raise forms.ValidationError('Год должен быть не меньше 1000.')
+        return year
