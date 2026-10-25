@@ -94,3 +94,51 @@ class Book(models.Model):
     def __str__(self):
         """Возвращает название книги."""
         return f'{self.title} — {self.author.name}'
+
+
+class Review(models.Model):
+    """Отзыв пользователя на книгу."""
+
+    RATING_CHOICES = [
+        (1, 'Ужасно'),
+        (2, 'Плохо'),
+        (3, 'Нормально'),
+        (4, 'Хорошо'),
+        (5, 'Отлично'),
+    ]
+
+    book = models.ForeignKey(
+        Book,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Книга',
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+        verbose_name='Пользователь',
+    )
+    text = models.TextField(verbose_name='Текст отзыва')
+    rating = models.PositiveSmallIntegerField(
+        choices=RATING_CHOICES,
+        verbose_name='Оценка',
+    )
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='Дата')
+
+    class Meta:
+        """Метаданные модели."""
+
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['book', 'user'],
+                name='unique_review_per_book',
+            ),
+        ]
+
+    def __str__(self):
+        """Возвращает описание отзыва."""
+        return f'{self.user.username} — {self.book.title} ({self.rating}/5)'

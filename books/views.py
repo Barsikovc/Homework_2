@@ -1,21 +1,22 @@
 """Views для приложения books (CBV)."""
 import logging
 
+from django.shortcuts import get_object_or_404
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView, DeleteView, DetailView, ListView, UpdateView,
 )
-
-from .forms import AuthorForm, BookForm, GenreForm
 from .mixins import (
     AuthorRequiredMixin,
     IsOwnerOrModeratorMixin,
     ModeratorRequiredMixin,
 )
-from .models import Author, Book, Genre
-from .services import send_new_book_email
 from .services import send_new_book_email, send_views_milestone_email
+from .forms import AuthorForm, BookForm, BookUpdateForm, BookAdminUpdateForm, GenreForm, ReviewForm
+from .models import Author, Book, Genre, Review
 
 logger = logging.getLogger('homework.requests')
 
@@ -270,3 +271,81 @@ class AuthorDeleteView(AuthorRequiredMixin, DeleteView):
     model = Author
     template_name = 'books/author_confirm_delete.html'
     success_url = reverse_lazy('books:author_list')
+
+
+# ============ REVIEWS ============
+
+class ReviewCreateView(LoginRequiredMixin, CreateView):
+    """Создание отзыва на книгу."""
+
+    model = Review
+    form_class = ReviewForm
+    template_name = 'books/review_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """Сохраняет book_id из URL."""
+        self.book = get_object_or_404(Book, pk=kwargs['book_pk'])
+        return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        """Привязывает отзыв к книге и пользователю."""
+        form.instance.book = self.book
+        form.instance.user = self.request.user
+        logger.info(
+            'User %s created review for book "%s"',
+            self.request.user, self.book.title,
+        )
+        return super().form_valid(form)
+
+    def get_success_url(self):
+        """Возвращает на страницу книги."""
+        return reverse_lazy('books:book_detail', kwargs={'pk': self.book.pk})
+
+    def get_context_data(self, **kwargs):
+        """Добавляет книгу в контекст."""
+        ctx = super().get_context_data(**kwargs)
+        ctx['book'] = self.book
+        return ctx
+
+
+class ReviewUpdateView(LoginRequiredMixin, UpdateView):
+    """Редактирование отзыва (только автор)."""
+
+    model = Review
+    form_class = ReviewForm
+    template_name = 'books/review_form.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """Проверяет, что отзыв принадлежит пользователю."""
+        review = self.get_object()
+        if review.user != request.user and not request.user.is_staff:
+            raise PermissionDenied('Вы можете редактировать только свои отзывы.')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        """Возвращает на страницу книги."""
+        return reverse_lazy('books:book_detail', kwargs={'pk': self.object.book.pk})
+
+    def get_context_data(self, **kwargs):
+        """Добавляет книгу."""
+        ctx = super().get_context_data(**kwargs)
+        ctx['book'] = self.object.book
+        return ctx
+
+
+class ReviewDeleteView(LoginRequiredMixin, DeleteView):
+    """Удаление отзыва (только автор или админ)."""
+
+    model = Review
+    template_name = 'books/review_confirm_delete.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        """Проверяет права."""
+        review = self.get_object()
+        if review.user != request.user and not request.user.is_staff:
+            raise PermissionDenied('Вы можете удалять только свои отзывы.')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_success_url(self):
+        """Возвращает на страницу книги."""
+        return reverse_lazy('books:book_detail', kwargs={'pk': self.object.book.pk})

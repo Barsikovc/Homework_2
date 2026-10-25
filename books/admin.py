@@ -1,7 +1,7 @@
 """Настройка админки для приложения books."""
 from django.contrib import admin
 
-from .models import Author, Book, Genre
+from .models import Author, Book, Genre, Review
 
 
 @admin.register(Author)
@@ -27,3 +27,13 @@ class BookAdmin(admin.ModelAdmin):
     list_display = ('id', 'title', 'author', 'genre', 'year', 'owner', 'created_at')
     list_filter = ('genre', 'year', 'author')
     search_fields = ('title',)
+
+
+
+@admin.register(Review)
+class ReviewAdmin(admin.ModelAdmin):
+    """Админка для отзыва."""
+
+    list_display = ('id', 'book', 'user', 'rating', 'created_at')
+    list_filter = ('rating',)
+    search_fields = ('text', 'book__title', 'user__username')

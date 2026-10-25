@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Пользователи{% endblock %}
+
+{% block content %}
+<h1>Пользователи</h1>
+
+{% if users %}
+    {% for u in users %}
+        <div class="book-card">
+            {% if u.avatar %}
+                <img src="{{ u.avatar.url }}" alt="{{ u.username }}" style="max-width:100px;">
+            {% endif %}
+            <h3>
+                <a href="{% url 'users:user_detail' u.pk %}">{{ u.username }}</a>
+                {% if u.role == 'admin' %}<span style="color:#a00;">[Админ]</span>{% endif %}
+                {% if u.role == 'moderator' %}<span style="color:#06c;">[Модератор]</span>{% endif %}
+                {% if u.role == 'author' %}<span style="color:#090;">[Автор]</span>{% endif %}
+            </h3>
+            <p><strong>Имя:</strong> {{ u.get_full_name }}</p>
+            <p><strong>Роль:</strong> {{ u.get_role_display }}</p>
+            {% if u.phone %}<p><strong>Телефон:</strong> {{ u.phone }}</p>{% endif %}
+        </div>
+    {% endfor %}
+
+    {% if is_paginated %}
+        <div>
+            {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}" class="btn">← Назад</a>
+            {% endif %}
+            Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}" class="btn">Вперёд →</a>
+            {% endif %}
+        </div>
+    {% endif %}
+{% else %}
+    <p>Пользователей нет.</p>
+{% endif %}
+{% endblock %}

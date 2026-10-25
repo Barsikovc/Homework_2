@@ -1,47 +1,25 @@
-{% extends 'base.html' %}
-{% load book_tags %}
+<h2>Отзывы ({{ book.reviews.count }})</h2>
 
-{% block title %}{{ book.title }}{% endblock %}
+{% if book.reviews.exists %}
+    {% for review in book.reviews.all %}
+        <div class="book-card">
+            <p><strong>{{ review.user.username }}</strong> — {{ review.rating }}/5</p>
+            <p>{{ review.text }}</p>
+            <p><small>{{ review.created_at|date:"d.m.Y H:i" }}</small></p>
+            {% if review.user == user or user.is_staff %}
+                <a href="{% url 'books:review_update' review.pk %}" class="btn">Изменить</a>
+                <a href="{% url 'books:review_delete' review.pk %}" class="btn">Удалить</a>
+            {% endif %}
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Отзывов пока нет.</p>
+{% endif %}
 
-{% block content %}
-<div class="book-detail">
-    {% if book.cover %}
-        <img src="{{ book.cover.url }}" alt="{{ book.title }}">
+{% if user.is_authenticated %}
+    {% if not book.reviews.all|length or not user.reviews.all %}
+        <p><a href="{% url 'books:review_create' book.pk %}" class="btn">Оставить отзыв</a></p>
     {% endif %}
-    <h1>
-        {{ book.title }}
-        {% if not book.is_active %}<span style="color:#a00;">(неактивна)</span>{% endif %}
-    </h1>
-
-    <p><strong>Автор:</strong> <a href="{% url 'books:author_detail' book.author.pk %}">{{ book.author.name }}</a></p>
-    <p><strong>Жанр:</strong> <a href="{% url 'books:genre_detail' book.genre.pk %}">{{ book.genre.name }}</a></p>
-    {% if book.year %}<p><strong>Год:</strong> {{ book.year }}</p>{% endif %}
-    {% if book.description %}<p>{{ book.description }}</p>{% endif %}
-    {% if book.owner %}<p><strong>Добавил:</strong> {{ book.owner.username }}</p>{% endif %}
-
-    {# Счётчик просмотров — только модератору/админу #}
-    {% if user|is_moderator %}
-        <p><strong>Просмотров:</strong> {{ book.views }}</p>
-    {% endif %}
-
-    {# Кнопки для владельца/модератора #}
-    {% if book|can_edit:user %}
-        <p>
-            <a href="{% url 'books:book_update' book.pk %}" class="btn">Редактировать</a>
-            <a href="{% url 'books:book_delete' book.pk %}" class="btn">Удалить</a>
-        </p>
-    {% endif %}
-
-    {# Кнопка смены активности — только модератору/админу #}
-    {% if user|can_toggle_active %}
-        <form method="post" action="{% url 'books:book_toggle_active' book.pk %}" style="display:inline">
-            {% csrf_token %}
-            <button type="submit" class="btn">
-                {% if book.is_active %}Деактивировать{% else %}Активировать{% endif %}
-            </button>
-        </form>
-    {% endif %}
-
-    <p><a href="{% url 'books:book_list' %}">← Назад к списку</a></p>
-</div>
-{% endblock %}
+{% else %}
+    <p><a href="{% url 'users:login' %}">Войдите</a>, чтобы оставить отзыв.</p>
+{% endif %}

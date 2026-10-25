@@ -8,6 +8,8 @@ from django.contrib.auth.views import (
 )
 from django.urls import reverse_lazy
 from django.views.generic import CreateView, UpdateView
+from django.views.generic import DetailView, ListView
+
 
 from .forms import (
     CustomPasswordChangeForm,
@@ -15,6 +17,8 @@ from .forms import (
     UserRegisterForm,
     UserUpdateForm,
 )
+
+
 from .models import CustomUser
 from .services import send_password_change_email, send_welcome_email
 
@@ -93,3 +97,31 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
         update_session_auth_hash(self.request, form.user)
         send_password_change_email(form.user)
         return response
+
+class UserListView(ListView):
+    """Список всех пользователей."""
+
+    model = CustomUser
+    template_name = 'users/user_list.html'
+    context_object_name = 'users'
+    paginate_by = 10
+
+    def get_queryset(self):
+        """Сортирует по дате регистрации."""
+        return CustomUser.objects.order_by('-created_at')
+
+
+class UserDetailView(DetailView):
+    """Публичный профиль пользователя."""
+
+    model = CustomUser
+    template_name = 'users/user_detail.html'
+    context_object_name = 'profile_user'
+
+    def get_context_data(self, **kwargs):
+        """Добавляет книги и отзывы пользователя."""
+        ctx = super().get_context_data(**kwargs)
+        user_obj = self.object
+        ctx['books'] = user_obj.books.filter(is_active=True)[:5]
+        ctx['reviews'] = user_obj.reviews.select_related('book')[:5]
+        return ctx

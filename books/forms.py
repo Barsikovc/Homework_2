@@ -4,7 +4,7 @@ from datetime import date
 from django import forms
 
 from .models import Author, Book
-
+from .models import Review
 
 class StyleFormMixin:
     """Миксин для CSS-классов."""
@@ -146,3 +146,23 @@ class BookAdminUpdateForm(StyleFormMixin, forms.ModelForm):
         if year and year < 1000:
             raise forms.ValidationError('Год должен быть не меньше 1000.')
         return year
+
+
+class ReviewForm(StyleFormMixin, forms.ModelForm):
+    """Форма для отзыва."""
+
+    class Meta:
+        """Метаданные формы."""
+
+        model = Review
+        fields = ['text', 'rating']
+        widgets = {
+            'text': forms.Textarea(attrs={'rows': 4}),
+        }
+
+    def clean_text(self):
+        """Проверяет длину текста."""
+        text = self.cleaned_data.get('text', '').strip()
+        if len(text) < 10:
+            raise forms.ValidationError('Отзыв должен содержать минимум 10 символов.')
+        return text

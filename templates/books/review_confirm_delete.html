@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Удалить отзыв{% endblock %}
+
+{% block content %}
+<h1>Удалить отзыв?</h1>
+
+<p>На книгу: <strong>{{ object.book.title }}</strong></p>
+<p>Оценка: {{ object.rating }}/5</p>
+<p>{{ object.text }}</p>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn">Удалить</button>
+    <a href="{% url 'books:book_detail' object.book.pk %}" class="btn">Отмена</a>
+</form>
+{% endblock %}
